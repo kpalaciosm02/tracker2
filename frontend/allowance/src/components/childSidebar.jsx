@@ -2,13 +2,17 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./sidebar.css";
 
-const UserData = { name: "Michael", status: "Child", pictureUrl: "./assets/placeholder.png" };
-
-const ChildSidebar = () => {
+const ChildSidebar = ({currentProfile}) => {
     const navigate = useNavigate();
 
     const goToDashboard = () => {
-        navigate("/childTransactionList");
+        navigate("/childTransactionList", { 
+            state: { 
+                name: currentProfile.name, 
+                status: currentProfile.status, 
+                pictureUrl: currentProfile.pictureUrl 
+            } 
+        });
     };
 
     const signOut = () => {
@@ -19,13 +23,13 @@ const ChildSidebar = () => {
         <div className="sidebar">
             <div className="userArea">
                 <div className="center">
-                    <img src={UserData.pictureUrl} alt="" />
+                    <img src={currentProfile.pictureUrl} alt="" />
                 </div>
                 <div className="center">
-                    <h2>{UserData.name}</h2>
+                    <h2>{currentProfile.name}</h2>
                 </div>
                 <div className="center">
-                    <p>{UserData.status}</p>
+                    <p>{currentProfile.status}</p>
                 </div>
             </div>
             <ul>

@@ -4,7 +4,7 @@ import "./sidebar.css";
 
 const AdminSidebar = ({ currentProfile }) => {
     const navigate = useNavigate();
-    console.log("User data in admin sidebar:", currentProfile);
+    //console.log("User data in admin sidebar:", currentProfile);
     const goToDashboard = () => {
         navigate("/adminDashboard", { 
             state: { 

@@ -2,8 +2,17 @@ import React from "react";
 import ChildSidebar from "../components/childSidebar";
 import TransactionCard from "../components/transactionCard";
 import "./adminTransactionList.css"
+import { useLocation } from "react-router-dom";
 
 const ChildTransactionList = () => {
+    const location = useLocation();
+
+    const name = location.state?.name || "Unknown";
+    const status = location.state?.status || "Unknown";
+    const pictureUrl = location.state?.pictureUrl || "../../public/assets/placeholder.png";
+
+    const currentProfile = {name:name,status:status,pictureUrl:pictureUrl};
+
     const transactions = [
         {
             transactionDate: "2024-11-20T10:15:00Z",
@@ -29,7 +38,7 @@ const ChildTransactionList = () => {
     ];
     return (
         <div style={{display:"flex"}}>
-            <ChildSidebar/>
+            <ChildSidebar currentProfile={currentProfile}/>
             <div>
                 {transactions.map((transaction, index) => (
                     <TransactionCard key={index} transaction={transaction} />

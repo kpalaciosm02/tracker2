@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import axios from 'axios';
 import FamilyCard from "../components/familyCard";
@@ -19,6 +20,13 @@ const AdminManageFamily = () => {
     const auth = getAuth();
     const userId = auth.currentUser?.uid;
 
+    const location = useLocation();
+    const currentProfileName = location.state?.name || "Unknown";
+    const status = location.state?.status || "Unknown";
+    const pictureUrl = location.state?.pictureUrl || "../../public/assets/placeholder.png";
+
+    const currentProfile = {name:currentProfileName,status:status,pictureUrl:pictureUrl};
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -29,21 +37,20 @@ const AdminManageFamily = () => {
                     params: { userId: userId }
                 });
                 
-                console.log('Full API Response:', response.data);
+                //console.log('Full API Response:', response.data);
     
                 const userData = response.data[0];
                 setUserData(userData);
     
-                // Map API response to the required structure for rendering family members
                 const allFamilyMembers = response.data.map(member => ({
                     id: member.userId,
                     memberName: member.name,
-                    memberUserType: member.userType, // Updated from memberRole to memberUserType
+                    memberUserType: member.userType,
                     imageUrl: member.imageUrl || "assets/placeholder.png",
                     currentBalance: member.currentBalance
                 }));
     
-                setFamilyMembers(allFamilyMembers); // Update state with all family members
+                setFamilyMembers(allFamilyMembers);
             } catch (error) {
                 console.error('Fetch error:', error.response || error);
                 setError("Failed to load user data.");
@@ -104,7 +111,7 @@ const AdminManageFamily = () => {
 
     return (
         <div style={{ display: "flex" }}>
-            <AdminSidebar />
+            <AdminSidebar currentProfile={currentProfile}/>
             <div>
                 <div className="manage-family-header">
                     <button className="main-button" onClick={toggleModal}>Add member</button>
@@ -134,7 +141,7 @@ const AdminManageFamily = () => {
                                     <input type="text" placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)}/>
                                 </label>
                                 <label>
-                                    User Type: {/* Updated label */}
+                                    User Type: {}
                                     <select value={userType} onChange={(e) => setUserType(e.target.value)}>
                                         <option value="Parent">Parent</option>
                                         <option value="Child">Child</option>

@@ -14,7 +14,7 @@ function Login() {
 
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                console.log('User signed in:', userCredential.user);
+                //console.log('User signed in:', userCredential.user);
                 navigate('/userSelector');
             })
             .catch((err) => {

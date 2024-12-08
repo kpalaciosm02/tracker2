@@ -8,19 +8,35 @@ const Card = ({ name, status, pictureUrl, correctPin }) => {
     const navigate = useNavigate();
 
     const handleCardClick = () => {
-        setIsPinVisible(true); // Show the PIN input when the card is clicked
+        setIsPinVisible(true);
     };
 
     const handlePinChange = (e) => {
-        const numericValue = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
-        setPin(numericValue); // Update the PIN value
+        const numericValue = e.target.value.replace(/\D/g, "");
+        setPin(numericValue);
     };
 
     const handlePinSubmit = (e) => {
         e.preventDefault();
         if (pin === correctPin) {
             setIsPinVisible(false);
-            navigate('/adminDashboard');
+            if (status === 'Parent') {
+                navigate('/adminDashboard', { 
+                    state: { 
+                        name: name, 
+                        status: status, 
+                        pictureUrl: pictureUrl 
+                    } 
+                });
+            } else {
+                navigate('/childTransactionList', { 
+                    state: { 
+                        name: name, 
+                        status: status, 
+                        pictureUrl: pictureUrl 
+                    } 
+                });
+            }
         } else {
             alert("Incorrect PIN!");
         }

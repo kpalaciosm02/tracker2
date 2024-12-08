@@ -2,21 +2,37 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./sidebar.css";
 
-const UserData = { name: "Alice", status: "Parent", pictureUrl: "./assets/placeholder.png" };
-
-const AdminSidebar = () => {
+const AdminSidebar = ({ currentProfile }) => {
     const navigate = useNavigate();
-
+    console.log("User data in admin sidebar:", currentProfile);
     const goToDashboard = () => {
-        navigate("/adminDashboard");
+        navigate("/adminDashboard", { 
+            state: { 
+                name: currentProfile.name, 
+                status: currentProfile.status, 
+                pictureUrl: currentProfile.pictureUrl 
+            } 
+        });
     };
 
     const goToTransactionList = () => {
-        navigate("/adminTransactionList");
+        navigate("/adminTransactionList", { 
+            state: { 
+                name: currentProfile.name, 
+                status: currentProfile.status, 
+                pictureUrl: currentProfile.pictureUrl 
+            } 
+        });
     };
 
     const goToManageFamily = () => {
-        navigate("/adminManageFamily");
+        navigate("/adminManageFamily", { 
+            state: { 
+                name: currentProfile.name, 
+                status: currentProfile.status, 
+                pictureUrl: currentProfile.pictureUrl 
+            } 
+        });
     };
 
     const signOut = () => {
@@ -27,13 +43,13 @@ const AdminSidebar = () => {
         <div className="sidebar">
             <div className="userArea">
                 <div className="center">
-                    <img src={UserData.pictureUrl} alt="" />
+                    <img src={currentProfile.pictureUrl} alt="" />
                 </div>
                 <div className="center">
-                    <h2>{UserData.name}</h2>
+                    <h2>{currentProfile.name}</h2>
                 </div>
                 <div className="center">
-                    <p>{UserData.status}</p>
+                    <p>{currentProfile.status}</p>
                 </div>
             </div>
             <ul>

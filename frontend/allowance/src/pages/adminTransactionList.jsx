@@ -2,8 +2,17 @@ import React from "react";
 import AdminSidebar from "../components/adminSidebar";
 import TransactionCard from "../components/transactionCard";
 import "./adminTransactionList.css"
+import { useLocation } from "react-router-dom";
 
 const AdminTransactionList = () => {
+    const location = useLocation();
+
+    const name = location.state?.name || "Unknown";
+    const status = location.state?.status || "Unknown";
+    const pictureUrl = location.state?.pictureUrl || "../../public/assets/placeholder.png";
+
+    const currentProfile = {name:name,status:status,pictureUrl:pictureUrl};
+
     const transactions = [
         {
             transactionDate: "2024-11-20T10:15:00Z",
@@ -43,7 +52,7 @@ const AdminTransactionList = () => {
     ];
     return (
         <div style={{display:"flex"}}>
-            <AdminSidebar/>
+            <AdminSidebar currentProfile={currentProfile}/>
             <div>
                 {transactions.map((transaction, index) => (
                     <TransactionCard key={index} transaction={transaction} />

@@ -18,13 +18,12 @@ const UserSelector = () => {
                 return;
             }
 
-            const userQuery = query(collection(db, "users"), where("userId", "==", currentUserId));
+            const userQuery = query(collection(db, "profile"), where("userId", "==", currentUserId));
             const querySnapshot = await getDocs(userQuery);
 
             const accounts = querySnapshot.docs.map((doc) => {
-                // Log the data of each user document
                 const userData = doc.data();
-                console.log("Fetched user data:", userData);
+                //console.log("Fetched user data:", userData);
         
                 return new Account(
                     userData.name,
@@ -32,7 +31,7 @@ const UserSelector = () => {
                     userData.userId,
                     userData.userType,
                     userData.pictureUrl || "./assets/placeholder.png",
-                    userData.pin // Make sure pin is passed into Account
+                    userData.currentBalance || 0
                 );
             });
             setUserAccounts(accounts.map((account) => account.getDisplayInfo()));

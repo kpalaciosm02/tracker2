@@ -48,19 +48,17 @@ function SignUp() {
         }
 
         try {
-            // Create a new user with email and password
             const userCredential = await createUserWithEmailAndPassword(auth, username, password);
             const userId = userCredential.user.uid;
 
-            // Save additional user data to Firestore
-            await addDoc(collection(db, 'users'), {
-                userId,   // Save the userId
-                userType: 'parent', // Save userType as 'parent'
-                name,     // Save the user's name
-                pin       // Save the pin
+            await addDoc(collection(db, 'profile'), {
+                userId,
+                userType: 'Parent',
+                name,
+                pin,
+                currentBalance: 0
             });
 
-            // Navigate to the home page or another relevant page after successful sign-up
             navigate('/');
         } catch (err) {
             console.error('Sign-up error:', err);

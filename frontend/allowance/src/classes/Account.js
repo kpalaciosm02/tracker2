@@ -1,10 +1,11 @@
 class Account {
-    constructor(accountName, pin, userId, userType, pictureUrl) {
+    constructor(accountName, pin, userId, userType, pictureUrl, currentBalance) {
         this.accountName = accountName; // The name of the account holder
         this.pin = pin;                 // The account's PIN
         this.userId = userId;           // Unique identifier for the user
         this.userType = userType;       // Type of user (e.g., "parent", "child", etc.)
         this.pictureUrl = pictureUrl;
+        this.currentBalance = currentBalance;
     }
 
     // Method to check if a given PIN is correct

@@ -18,7 +18,6 @@ const Card = ({ name, status, pictureUrl, correctPin }) => {
 
     const handlePinSubmit = (e) => {
         e.preventDefault();
-        alert(correctPin);  // Now alert will show the correct pin value
         if (pin === correctPin) {
             setIsPinVisible(false);
             navigate('/adminDashboard');

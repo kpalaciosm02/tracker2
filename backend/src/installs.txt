@@ -1,1 +1,3 @@
-pip install Flask firebase-admin
+pip install Flask firebase-admin flask-cors
+
+npm install axios //en el frontend

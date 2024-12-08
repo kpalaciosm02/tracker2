@@ -1,14 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios"
 import AdminSidebar from "../components/adminSidebar";
 import ChildList from "../components/childList";
 import { useLocation } from "react-router-dom";
-
+import { getAuth } from "firebase/auth";
 
 const AdminDashboard = () => {
     const location = useLocation();
-
-    //console.log("Full location state:", location.state);
-    //console.log("Typeof location.state:", typeof location.state);
     
     const name = location.state?.name || "Unknown";
     const status = location.state?.status || "Unknown";
@@ -16,14 +14,39 @@ const AdminDashboard = () => {
 
     const currentProfile = {name:name,status:status,pictureUrl:pictureUrl};
 
-    //console.log("Current profile:", currentProfile);
+    const [children, setChildren] = useState([]);
 
-    const children = [
-        { name: "Maria", childId: 1, pictureUrl: "./assets/placeholder.png", balance: 100.00 },
-        { name: "Bob", childId: 2, pictureUrl: "./assets/placeholder.png", balance: 100.00 },
-        { name: "Charlie", childId: 3, pictureUrl: "./assets/placeholder.png", balance: 100.00 },
-        { name: "Diana", childId: 4, pictureUrl: "./assets/placeholder.png", balance: 100.00 },
-    ]
+    useEffect(() => {
+        const fetchChildren = async () => {
+            try {
+                const auth = getAuth();
+                const currentUserId = auth.currentUser?.uid;
+
+                if (!currentUserId) {
+                    console.error("User is not authenticated.");
+                    return;
+                }
+
+                const response = await axios.get("http://localhost:5000/get-children", {
+                    params: { userId: currentUserId },
+                });
+
+                const formattedChildren = response.data.map((child) => ({
+                    childId: child.name,
+                    name: child.name,
+                    balance: child.currentBalance,
+                    pictureUrl: child.pictureUrl || "./assets/placeholder.png",
+                }));
+
+                setChildren(formattedChildren);
+            } catch (error) {
+                console.error("Error fetching children:", error.response?.data || error.message);
+            }
+        };
+
+        fetchChildren();
+    }, []);
+
     return (
         <div style={{display:"flex"}}>
             <AdminSidebar currentProfile={currentProfile}/>

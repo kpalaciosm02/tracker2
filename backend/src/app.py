@@ -108,6 +108,162 @@ def delete_profile():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/get-children', methods=['GET'])
+def get_children():
+    try:
+        # Get the userId from the query parameters
+        user_id = request.args.get('userId')
+        if not user_id:
+            return jsonify({"error": "Missing userId parameter"}), 400
+
+        # Query Firestore for children profiles related to the provided userId
+        docs = db.collection('profile') \
+                 .where('userId', '==', user_id) \
+                 .where('userType', '==', 'Child') \
+                 .stream()
+
+        # Collect matching documents into a list
+        children = [doc.to_dict() for doc in docs]
+
+        if not children:
+            return jsonify({"message": f"No children found for userId: {user_id}"}), 404
+
+        return jsonify(children), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/deposit', methods=['POST'])
+def deposit_money():
+    try:
+        # Get the JSON data from the request
+        data = request.json
+        
+        # Validate required fields
+        required_fields = ['userId', 'childName', 'amount', 'reason']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        user_id = data['userId']
+        child_name = data['childName']
+        amount = data['amount']
+        reason = data['reason']
+
+        # Validate the amount
+        if not isinstance(amount, (int, float)) or amount <= 0:
+            return jsonify({"error": "Amount must be a positive number"}), 400
+        
+        # Query Firestore for the specific child
+        child_docs = db.collection('profile') \
+                       .where('userId', '==', user_id) \
+                       .where('name', '==', child_name) \
+                       .stream()
+
+        # Check if the child exists
+        child_found = None
+        for doc in child_docs:
+            child_found = doc
+            break
+
+        if not child_found:
+            return jsonify({"error": "No matching child found"}), 404
+        
+        # Update the child's balance
+        child_ref = db.collection('profile').document(child_found.id)
+        current_balance = child_found.to_dict().get('currentBalance', 0)
+        new_balance = current_balance + amount
+        child_ref.update({'currentBalance': new_balance})
+
+        # Store the transaction in an independent collection
+        transactions_ref = db.collection('transactions')
+        transactions_ref.add({
+            'userId': user_id,
+            'childName': child_name,
+            'amount': amount,
+            'reason': reason,
+            'type': 'deposit',
+            'timestamp': firestore.SERVER_TIMESTAMP
+        })
+
+        return jsonify({
+            "message": f"Successfully deposited {amount} to {child_name}'s account.",
+            "newBalance": new_balance
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/withdraw', methods=['POST'])
+def withdraw_money():
+    try:
+        # Get the JSON data from the request
+        data = request.json
+        
+        # Validate required fields
+        required_fields = ['userId', 'childName', 'amount', 'reason']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        user_id = data['userId']
+        child_name = data['childName']
+        amount = data['amount']
+        reason = data['reason']
+
+        # Validate the amount
+        if not isinstance(amount, (int, float)) or amount <= 0:
+            return jsonify({"error": "Amount must be a positive number"}), 400
+        
+        # Query Firestore for the specific child
+        child_docs = db.collection('profile') \
+                       .where('userId', '==', user_id) \
+                       .where('name', '==', child_name) \
+                       .stream()
+
+        # Check if the child exists
+        child_found = None
+        for doc in child_docs:
+            child_found = doc
+            break
+
+        if not child_found:
+            return jsonify({"error": "No matching child found"}), 404
+        
+        # Get the child's current balance
+        child_ref = db.collection('profile').document(child_found.id)
+        current_balance = child_found.to_dict().get('currentBalance', 0)
+
+        # Check if the withdrawal amount exceeds the current balance
+        if amount > current_balance:
+            return jsonify({"error": "Insufficient balance"}), 400
+        
+        # Update the child's balance
+        new_balance = current_balance - amount
+        child_ref.update({'currentBalance': new_balance})
+
+        # Store the transaction in the independent collection
+        transactions_ref = db.collection('transactions')
+        transactions_ref.add({
+            'userId': user_id,
+            'childName': child_name,
+            'amount': amount,
+            'reason': reason,
+            'type': 'withdraw',
+            'timestamp': firestore.SERVER_TIMESTAMP
+        })
+
+        return jsonify({
+            "message": f"Successfully withdrew {amount} from {child_name}'s account.",
+            "newBalance": new_balance
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

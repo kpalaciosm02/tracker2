@@ -56,7 +56,8 @@ function SignUp() {
                 userType: 'Parent',
                 name,
                 pin,
-                currentBalance: 0
+                currentBalance: 0,
+                pictureUrl: "./assets/placeholder.png",
             });
 
             navigate('/');

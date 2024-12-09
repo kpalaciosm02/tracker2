@@ -111,18 +111,15 @@ def delete_profile():
 @app.route('/get-children', methods=['GET'])
 def get_children():
     try:
-        # Get the userId from the query parameters
         user_id = request.args.get('userId')
         if not user_id:
             return jsonify({"error": "Missing userId parameter"}), 400
 
-        # Query Firestore for children profiles related to the provided userId
         docs = db.collection('profile') \
                  .where('userId', '==', user_id) \
                  .where('userType', '==', 'Child') \
                  .stream()
 
-        # Collect matching documents into a list
         children = [doc.to_dict() for doc in docs]
 
         if not children:
@@ -136,10 +133,8 @@ def get_children():
 @app.route('/deposit', methods=['POST'])
 def deposit_money():
     try:
-        # Get the JSON data from the request
         data = request.json
         
-        # Validate required fields
         required_fields = ['userId', 'childName', 'amount', 'reason']
         for field in required_fields:
             if field not in data:
@@ -150,17 +145,14 @@ def deposit_money():
         amount = data['amount']
         reason = data['reason']
 
-        # Validate the amount
         if not isinstance(amount, (int, float)) or amount <= 0:
             return jsonify({"error": "Amount must be a positive number"}), 400
         
-        # Query Firestore for the specific child
         child_docs = db.collection('profile') \
                        .where('userId', '==', user_id) \
                        .where('name', '==', child_name) \
                        .stream()
 
-        # Check if the child exists
         child_found = None
         for doc in child_docs:
             child_found = doc
@@ -169,13 +161,11 @@ def deposit_money():
         if not child_found:
             return jsonify({"error": "No matching child found"}), 404
         
-        # Update the child's balance
         child_ref = db.collection('profile').document(child_found.id)
         current_balance = child_found.to_dict().get('currentBalance', 0)
         new_balance = current_balance + amount
         child_ref.update({'currentBalance': new_balance})
 
-        # Store the transaction in an independent collection
         transactions_ref = db.collection('transactions')
         transactions_ref.add({
             'userId': user_id,
@@ -197,10 +187,8 @@ def deposit_money():
 @app.route('/withdraw', methods=['POST'])
 def withdraw_money():
     try:
-        # Get the JSON data from the request
         data = request.json
         
-        # Validate required fields
         required_fields = ['userId', 'childName', 'amount', 'reason']
         for field in required_fields:
             if field not in data:
@@ -211,17 +199,14 @@ def withdraw_money():
         amount = data['amount']
         reason = data['reason']
 
-        # Validate the amount
         if not isinstance(amount, (int, float)) or amount <= 0:
             return jsonify({"error": "Amount must be a positive number"}), 400
         
-        # Query Firestore for the specific child
         child_docs = db.collection('profile') \
                        .where('userId', '==', user_id) \
                        .where('name', '==', child_name) \
                        .stream()
 
-        # Check if the child exists
         child_found = None
         for doc in child_docs:
             child_found = doc
@@ -230,19 +215,15 @@ def withdraw_money():
         if not child_found:
             return jsonify({"error": "No matching child found"}), 404
         
-        # Get the child's current balance
         child_ref = db.collection('profile').document(child_found.id)
         current_balance = child_found.to_dict().get('currentBalance', 0)
 
-        # Check if the withdrawal amount exceeds the current balance
         if amount > current_balance:
             return jsonify({"error": "Insufficient balance"}), 400
         
-        # Update the child's balance
         new_balance = current_balance - amount
         child_ref.update({'currentBalance': new_balance})
 
-        # Store the transaction in the independent collection
         transactions_ref = db.collection('transactions')
         transactions_ref.add({
             'userId': user_id,
@@ -261,6 +242,57 @@ def withdraw_money():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/get-child-transactions', methods=['GET'])
+def get_child_transactions():
+    try:
+        user_id = request.args.get('userId')
+        child_name = request.args.get('childName')
+
+        if not user_id or not child_name:
+            return jsonify({"error": "Both userId and childName are required"}), 400
+
+        transaction_docs = db.collection('transactions') \
+                              .where('userId', '==', user_id) \
+                              .where('childName', '==', child_name) \
+                              .stream()
+
+        transactions = [
+            {**doc.to_dict(), "id": doc.id}
+            for doc in transaction_docs
+        ]
+
+        if not transactions:
+            return jsonify({"message": "No transactions found for the given userId and childName"}), 404
+
+        return jsonify({"transactions": transactions}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/get-user-transactions', methods=['GET'])
+def get_user_transactions():
+    try:
+        user_id = request.args.get('userId')
+
+        if not user_id:
+            return jsonify({"error": "userId is required"}), 400
+
+        transaction_docs = db.collection('transactions') \
+                              .where('userId', '==', user_id) \
+                              .stream()
+
+        transactions = [
+            {**doc.to_dict(), "id": doc.id}
+            for doc in transaction_docs
+        ]
+
+        if not transactions:
+            return jsonify({"message": "No transactions found for the given userId"}), 404
+
+        return jsonify({"transactions": transactions}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 

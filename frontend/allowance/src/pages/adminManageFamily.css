@@ -75,10 +75,11 @@
 
 
 .manage-family-header {
-    margin: 12px;
+    margin: 12px 24px;
 }
 
 .manage-family-content {
+    margin-left: 24px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
-import { getAuth } from "firebase/auth";  // Import Firebase Auth
+import { getAuth } from "firebase/auth";
 import CardGrid from "../components/cardGrid";
 import Account from "../classes/Account";
 

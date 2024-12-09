@@ -2,20 +2,20 @@ import React from "react";
 import "./transactionCard.css";
 
 const TransactionCard = ({ transaction }) => {
-    const { transactionDate, transactionDescription, transactionSender, transactionReceiver, amount } = transaction;
+    const { timestamp, reason, childName, amount, type } = transaction;
 
     return (
         <div className="transaction-card">
             <div className="transaction-header">
-                <h3>{transactionDescription}</h3>
-                <p>{new Date(transactionDate).toLocaleDateString()}</p>
+                <h3>{reason}</h3>
+                <p>{new Date(timestamp).toLocaleDateString()}</p>
             </div>
             <div className="transaction-details">
                 <p>
-                    <strong>Sender:</strong> {transactionSender}
+                    <strong>Child Name:</strong> {childName}
                 </p>
                 <p>
-                    <strong>Receiver:</strong> {transactionReceiver}
+                    <strong>Type:</strong> {type}
                 </p>
                 <p>
                     <strong>Amount:</strong> ${amount.toFixed(2)}

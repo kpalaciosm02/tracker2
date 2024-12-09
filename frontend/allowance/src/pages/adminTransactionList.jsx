@@ -6,6 +6,27 @@ import "./adminTransactionList.css";
 import { useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 
+class Transaction {
+    constructor(amount, childName, reason, timestamp, type, userId) {
+        this.amount = amount;
+        this.childName = childName;
+        this.reason = reason;
+        this.timestamp = new Date(timestamp); // Ensure timestamp is a Date object
+        this.type = type;
+        this.userId = userId;
+
+        // Validate the timestamp
+        if (isNaN(this.timestamp)) {
+            throw new Error("Invalid timestamp format");
+        }
+    }
+
+    // Method to format the timestamp for display
+    getFormattedTimestamp() {
+        return this.timestamp.toLocaleDateString() + " " + this.timestamp.toLocaleTimeString();
+    }
+}
+
 const AdminTransactionList = () => {
     const location = useLocation();
 
@@ -34,7 +55,22 @@ const AdminTransactionList = () => {
                 const response = await axios.get(
                     `http://localhost:5000/get-user-transactions?userId=${userId}`
                 );
-                setTransactions(response.data.transactions || []);
+
+                // Convert each transaction into a Transaction instance
+                const transactionsData = response.data.transactions || [];
+                const transactionInstances = transactionsData.map(
+                    (t) =>
+                        new Transaction(
+                            t.amount,
+                            t.childName,
+                            t.reason,
+                            t.timestamp,
+                            t.type,
+                            t.userId
+                        )
+                );
+
+                setTransactions(transactionInstances);
                 setIsLoading(false);
             } catch (err) {
                 setError(err.response?.data?.error || "Failed to fetch transactions.");
@@ -54,9 +90,13 @@ const AdminTransactionList = () => {
     };
 
     const filteredTransactions = transactions.filter((transaction) => {
-        const matchesName = filters.name === "" || transaction.childName.toLowerCase().includes(filters.name.toLowerCase());
-        const matchesStartDate = filters.startDate === "" || new Date(transaction.timestamp) >= new Date(filters.startDate);
-        const matchesEndDate = filters.endDate === "" || new Date(transaction.timestamp) <= new Date(filters.endDate);
+        const matchesName =
+            filters.name === "" ||
+            transaction.childName.toLowerCase().includes(filters.name.toLowerCase());
+        const matchesStartDate =
+            filters.startDate === "" || transaction.timestamp >= new Date(filters.startDate);
+        const matchesEndDate =
+            filters.endDate === "" || transaction.timestamp <= new Date(filters.endDate);
 
         return matchesName && matchesStartDate && matchesEndDate;
     });
@@ -79,7 +119,14 @@ const AdminTransactionList = () => {
                                 <p>No transactions match the current filters.</p>
                             ) : (
                                 filteredTransactions.map((transaction, index) => (
-                                    <TransactionCard key={index} transaction={transaction} />
+                                    <TransactionCard
+                                        key={index}
+                                        transaction={{
+                                            ...transaction,
+                                            formattedTimestamp:
+                                                transaction.getFormattedTimestamp(),
+                                        }}
+                                    />
                                 ))
                             )}
                         </div>
@@ -120,6 +167,5 @@ const AdminTransactionList = () => {
         </div>
     );
 };
-
 
 export default AdminTransactionList;

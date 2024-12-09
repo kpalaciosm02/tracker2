@@ -294,6 +294,36 @@ def get_user_transactions():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/get-profile', methods=['GET'])
+def get_profile():
+    try:
+        # Get the 'name' and 'userId' from the request JSON body
+        name = request.args.get('name')
+        user_id = request.args.get('userId')
+
+        # Validate required fields
+        if not name or not user_id:
+            return jsonify({"error": "Missing 'name' or 'userId' in request body"}), 400
+
+        # Query Firestore for the document matching 'name' and 'userId'
+        docs = db.collection('profile') \
+                 .where('name', '==', name) \
+                 .where('userId', '==', user_id) \
+                 .stream()
+
+        # Collect matching documents
+        profile = None
+        for doc in docs:
+            profile = doc.to_dict()
+
+        if not profile:
+            return jsonify({"error": "No matching profile found"}), 404
+
+        return jsonify({"profile": profile}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 
